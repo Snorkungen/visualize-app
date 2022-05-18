@@ -93,7 +93,10 @@ const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonCont
     shuffleArray(testData);
     renderBars(testData);
 
-    func(testData).then(() => console.log("Done"));
+    func(testData).then(() =>{
+      renderBars(testData);
+      console.log("Done");
+    });
   });
 };
 
