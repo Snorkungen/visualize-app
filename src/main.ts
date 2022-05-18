@@ -101,15 +101,20 @@ const minSort = async (arr: number[]) => {
   return arr;
 }
 
+let isSorting = false;
 const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonContent: string) => {
   const button = createElement(buttonDivElement, "button", "content=" + buttonContent, "class=btn");
   button.addEventListener("click", async () => {
+    if (isSorting) return;
+    isSorting = true;
     shuffleArray(testData);
     renderBars(testData);
+    await sleep(250);
 
     time.sec(func(testData)).then((seconds) => {
       renderBars(testData);
       console.log(`${seconds} seconds`);
+      isSorting = false;
     });
   });
 };
@@ -120,7 +125,7 @@ createSortButton(minSort, "Min Sort")
 
 const inputContainerElement = createElement(app, "div");
 const RANGE_INPUT_ID = "rangeInputID";
-const rangeInputLabelElement = createElement(inputContainerElement, "label", `for=${RANGE_INPUT_ID}`,`content=${SORT_SLEEP_DELAY}`)
+const rangeInputLabelElement = createElement(inputContainerElement, "label", `for=${RANGE_INPUT_ID}`, `content=${SORT_SLEEP_DELAY}`)
 const rangeInputElement = createElement(inputContainerElement, "input", "type=range", "min=0", "max=500", `value=${SORT_SLEEP_DELAY}`, `id=${RANGE_INPUT_ID}`) as HTMLInputElement;
 rangeInputElement.addEventListener("input", () => {
   SORT_SLEEP_DELAY = rangeInputElement.valueAsNumber;
