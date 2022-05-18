@@ -87,6 +87,32 @@ const combSort = async (arr: number[]) => {
   return arr;
 }
 
+const minSort = async (arr: number[]) => {
+  let startI = 0;
+
+  let findMinIndex = (startIndex: number) => {
+    let index = startI;
+
+    for (let i = startIndex; i < arr.length; i++) {
+      if (arr[index] > arr[i]) index = i;
+    }
+
+    return index;
+  }
+
+  while (startI !== arr.length) {
+    let i = findMinIndex(startI);
+    await sleep(SORT_SLEEP_DELAY)
+    renderBars(testData);
+    setBarsActive(startI, i)
+
+    swap(arr, startI, i)
+    startI++;
+  }
+
+  return arr;
+}
+
 const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonContent: string) => {
   const button = createElement(buttonDivElement, "button", "content=" + buttonContent);
   button.addEventListener("click", async () => {
@@ -102,3 +128,4 @@ const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonCont
 
 createSortButton(bubbleSort, "Bubble Sort")
 createSortButton(combSort, "Comb Sort")
+createSortButton(minSort, "Min Sort")
