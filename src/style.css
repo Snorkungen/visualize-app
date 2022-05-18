@@ -6,3 +6,26 @@
   color: #2c3e50;
   margin-top: 60px;
 }
+
+.btn {
+  backface-visibility: hidden;
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  white-space: nowrap;
+  background: red;
+  border-radius: 0px;
+  border: 0px solid blue;
+  border-width: 0px 0px 4px 0px;
+  padding: 10px 20px 10px 20px;
+  color: white;
+  font-size: initial;
+  font-family: arial;
+  font-weight: 800;
+  font-style: normal;
+  transition: all 200ms ease-out;
+}
+
+.btn:hover {
+  border-color: red;
+}

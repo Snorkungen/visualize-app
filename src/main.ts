@@ -1,11 +1,5 @@
-import { createElement, createElementNS } from './lib/createElement';
 import './style.css'
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-const generateArrayOfRandomNumbers = (len: number, max = 100) => Array.from(new Array(len)).map(() => Math.floor(Math.random() * max) + 1);
-function shuffleArray<Type = unknown>(arr: Type[]) {
-  arr.sort(() => Math.random() - 0.5);
-}
+import { createElement, createElementNS, sleep, shuffleArray, generateArrayOfRandomNumbers, time } from './lib';
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999/xlink", "viewBox=0 0 100 100", "width=400");
@@ -110,14 +104,14 @@ const minSort = async (arr: number[]) => {
 }
 
 const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonContent: string) => {
-  const button = createElement(buttonDivElement, "button", "content=" + buttonContent);
+  const button = createElement(buttonDivElement, "button", "content=" + buttonContent, "class=btn");
   button.addEventListener("click", async () => {
     shuffleArray(testData);
     renderBars(testData);
 
-    func(testData).then(() => {
+    time.sec(func(testData)).then((seconds) => {
       renderBars(testData);
-      console.log("Done");
+      console.log(`${seconds} seconds`, "Done");
     });
   });
 };
@@ -125,3 +119,5 @@ const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonCont
 createSortButton(bubbleSort, "Bubble Sort")
 createSortButton(combSort, "Comb Sort")
 createSortButton(minSort, "Min Sort")
+
+time(sleep(300)).then(t => console.log(t))
