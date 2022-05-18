@@ -7,15 +7,15 @@ let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999
 let barsGroupElement = createElementNS(svgElement, "g");
 let buttonDivElement = createElement(app, "div");
 
-let testData = generateArrayOfRandomNumbers(25, 100)
-const SORT_SLEEP_DELAY = 150;
+let testData = generateArrayOfRandomNumbers(50, 100)
+let SORT_SLEEP_DELAY = 150;
 
 const renderBars = (data: number[]) => {
   barsGroupElement.innerHTML = "";
 
   for (let i = 0; i < data.length; i++) {
     let n = data[i]
-    createElementNS(barsGroupElement, "rect", "fill=red", `height=${n}`, `width=${3}`, `y=${100 - n}`, "x=" + i * 4)
+    createElementNS(barsGroupElement, "rect", "fill=red", `height=${n}`, `width=${2}`, `y=${100 - n}`, "x=" + i * 2)
   }
 };
 
@@ -23,11 +23,9 @@ const setBarsActive = (...indices: number[]) => {
   for (const i of indices) {
     let el = barsGroupElement.children[i];
     if (!el) continue;
-    el.setAttribute("fill", "green");
+    el.setAttribute("fill", "blue");
   }
 }
-
-
 
 renderBars(testData);
 
@@ -111,7 +109,7 @@ const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonCont
 
     time.sec(func(testData)).then((seconds) => {
       renderBars(testData);
-      console.log(`${seconds} seconds`, "Done");
+      console.log(`${seconds} seconds`);
     });
   });
 };
@@ -120,4 +118,11 @@ createSortButton(bubbleSort, "Bubble Sort")
 createSortButton(combSort, "Comb Sort")
 createSortButton(minSort, "Min Sort")
 
-time(sleep(300)).then(t => console.log(t))
+const inputContainerElement = createElement(app, "div");
+const RANGE_INPUT_ID = "rangeInputID";
+const rangeInputLabelElement = createElement(inputContainerElement, "label", `for=${RANGE_INPUT_ID}`,`content=${SORT_SLEEP_DELAY}`)
+const rangeInputElement = createElement(inputContainerElement, "input", "type=range", "min=0", "max=500", `value=${SORT_SLEEP_DELAY}`, `id=${RANGE_INPUT_ID}`) as HTMLInputElement;
+rangeInputElement.addEventListener("input", () => {
+  SORT_SLEEP_DELAY = rangeInputElement.valueAsNumber;
+  rangeInputLabelElement.textContent = rangeInputElement.value;
+});
