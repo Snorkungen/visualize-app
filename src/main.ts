@@ -88,26 +88,22 @@ const combSort = async (arr: number[]) => {
 }
 
 const minSort = async (arr: number[]) => {
-  let startI = 0;
+  let startIndex = 0;
 
-  let findMinIndex = (startIndex: number) => {
-    let index = startI;
+  while (startIndex < arr.length) {
+    let minIndex = startIndex;
 
     for (let i = startIndex; i < arr.length; i++) {
-      if (arr[index] > arr[i]) index = i;
+      await sleep(SORT_SLEEP_DELAY);
+      renderBars(testData);
+      setBarsActive(startIndex, i, minIndex);
+      if (arr[minIndex] >= arr[i]) {
+        minIndex = i;
+      }
     }
 
-    return index;
-  }
-
-  while (startI !== arr.length) {
-    let i = findMinIndex(startI);
-    await sleep(SORT_SLEEP_DELAY)
-    renderBars(testData);
-    setBarsActive(startI, i)
-
-    swap(arr, startI, i)
-    startI++;
+    swap(arr, startIndex, minIndex)
+    startIndex++;
   }
 
   return arr;
