@@ -2,38 +2,38 @@ import { createElement, createElementNS } from './lib/createElement';
 import './style.css'
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const generateArrayOfRandomNumbers = (len: number, max = 100) => Array.from(new Array(len)).map(() => Math.floor(Math.random() * max) + 1);
 function shuffleArray<Type = unknown>(arr: Type[]) {
   arr.sort(() => Math.random() - 0.5);
 }
 
 const app = document.querySelector<HTMLDivElement>('#app')!
-
-let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999/xlink", "viewBox=0 0 100 100", "width=200");
+let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999/xlink", "viewBox=0 0 100 100", "width=400");
 /* background */ createElementNS(svgElement, "rect", "height=100", "width=100", "fill=#303030");
 let barsGroupElement = createElementNS(svgElement, "g");
+let buttonDivElement = createElement(app, "div");
+
+let testData = generateArrayOfRandomNumbers(25, 100)
+const SORT_SLEEP_DELAY = 150;
 
 const renderBars = (data: number[]) => {
   barsGroupElement.innerHTML = "";
 
   for (let i = 0; i < data.length; i++) {
     let n = data[i]
-    createElementNS(barsGroupElement, "rect", "fill=red", `height=${n}`, "width=4", "x=" + i * 5)
+    createElementNS(barsGroupElement, "rect", "fill=red", `height=${n}`, `width=${3}`, `y=${100 - n}`, "x=" + i * 4)
   }
 };
 
 const setBarsActive = (...indices: number[]) => {
   for (const i of indices) {
     let el = barsGroupElement.children[i];
-    if(!el) continue;
+    if (!el) continue;
     el.setAttribute("fill", "green");
   }
 }
 
 
-let testData = [
-  43, 3, 54, 2, 65, 34, 23, 45, 23, 42, 1, 21, 54, 35, 43, 55, 24, 43, 2, 2
-];
-const SORT_SLEEP_DELAY = 150;
 
 renderBars(testData);
 
@@ -88,17 +88,17 @@ const combSort = async (arr: number[]) => {
 }
 
 const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonContent: string) => {
-  const button = createElement(app, "button", "content=" + buttonContent);
+  const button = createElement(buttonDivElement, "button", "content=" + buttonContent);
   button.addEventListener("click", async () => {
     shuffleArray(testData);
     renderBars(testData);
 
-    func(testData).then(() =>{
+    func(testData).then(() => {
       renderBars(testData);
       console.log("Done");
     });
   });
 };
 
-createSortButton(bubbleSort,"Bubble Sort")
-createSortButton(combSort,"Comb Sort")
+createSortButton(bubbleSort, "Bubble Sort")
+createSortButton(combSort, "Comb Sort")
