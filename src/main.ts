@@ -1,21 +1,27 @@
 import './style.css'
 import { createElement, createElementNS, sleep, shuffleArray, generateArrayOfRandomNumbers, time } from './lib';
 
-const app = document.querySelector<HTMLDivElement>('#app')!
-let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999/xlink", "viewBox=0 0 100 100", "width=400");
+const app = document.querySelector<HTMLDivElement>('#app');
+
+const totalWidth = 100;
+const totalHeight = 100;
+const arrayCount = 50;
+const barWidth = Math.floor(totalWidth / arrayCount);
+
+let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999/xlink", `viewBox=0 0 ${totalWidth} ${totalHeight}`, "width=400");
 /* background */ createElementNS(svgElement, "rect", "height=100", "width=100", "fill=#303030");
 let barsGroupElement = createElementNS(svgElement, "g");
 let buttonDivElement = createElement(app, "div");
 
-let testData = generateArrayOfRandomNumbers(50, 100)
-let SORT_SLEEP_DELAY = 150;
+let testData = generateArrayOfRandomNumbers(arrayCount, totalHeight)
+let SORT_SLEEP_DELAY = 15//0;
 
 const renderBars = (data: number[]) => {
   barsGroupElement.innerHTML = "";
 
   for (let i = 0; i < data.length; i++) {
     let n = data[i]
-    createElementNS(barsGroupElement, "rect", "fill=red", `height=${n}`, `width=${2}`, `y=${100 - n}`, "x=" + i * 2)
+    createElementNS(barsGroupElement, "rect", "fill=red", `height=${n}`, `width=${barWidth - 1}`, `y=${totalHeight - n}`, "x=" + i * barWidth)
   }
 };
 
@@ -100,6 +106,52 @@ const minSort = async (arr: number[]) => {
 
   return arr;
 }
+const minMaxSort = async (arr: number[], p = 0, q = arr.length - 1) => {
+  // https://www.ijert.org/a-new-approach-to-sorting-min-max-sorting-algorithm
+
+  let visualize = async (...indices: number[]) => {
+    await sleep(SORT_SLEEP_DELAY);
+    renderBars(testData);
+    setBarsActive(...indices)
+  }
+
+
+  let minimum = async (p: number, q: number) => {
+    let min = arr[p];
+    for (let i = p; i <= q; i++) {
+      await visualize(p, i)
+      if (arr[i] < min) {
+        let temp = min;
+        min = arr[i];
+        arr[i] = temp;
+      }
+      arr[p] = min;
+    }
+  }
+  let maximum = async (p: number, q: number) => {
+    let max = arr[q];
+    for (let i = p; i <= q; i++) {
+      await visualize(q, i)
+      let temp: number;
+      if (arr[i] > max) {
+        temp = arr[i];
+        arr[i] = arr[q];
+        arr[q] = temp;
+      }
+      max = arr[q];
+    }
+  }
+
+
+  while (p < q) {
+    await minimum(p, q);
+    await maximum(p, q);
+    p++;
+    q--;
+  }
+
+  return arr;
+}
 
 let isSorting = false;
 const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonContent: string) => {
@@ -122,6 +174,7 @@ const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonCont
 createSortButton(bubbleSort, "Bubble Sort")
 createSortButton(combSort, "Comb Sort")
 createSortButton(minSort, "Min Sort")
+createSortButton(minMaxSort, "Min-Max Sort")
 
 const inputContainerElement = createElement(app, "div");
 const RANGE_INPUT_ID = "rangeInputID";
