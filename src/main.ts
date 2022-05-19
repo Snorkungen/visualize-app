@@ -5,7 +5,7 @@ const app = document.querySelector<HTMLDivElement>('#app');
 
 const totalWidth = 100;
 const totalHeight = 100;
-const arrayCount = 50;
+const arrayCount = 20;
 const barWidth = Math.floor(totalWidth / arrayCount);
 
 let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999/xlink", `viewBox=0 0 ${totalWidth} ${totalHeight}`, "width=400");
@@ -26,6 +26,7 @@ const renderBars = (data: number[]) => {
 };
 
 const setBarsActive = (...indices: number[]) => {
+  indices = Array.from(new Set(indices));
   for (const i of indices) {
     let el = barsGroupElement.children[i];
     if (!el) continue;
@@ -85,67 +86,35 @@ const combSort = async (arr: number[]) => {
   return arr;
 }
 
-const minSort = async (arr: number[]) => {
-  let startIndex = 0;
-
-  while (startIndex < arr.length) {
-    let minIndex = startIndex;
-
-    for (let i = startIndex; i < arr.length; i++) {
-      await sleep(SORT_SLEEP_DELAY);
-      renderBars(testData);
-      setBarsActive(startIndex, i, minIndex);
-      if (arr[minIndex] >= arr[i]) {
-        minIndex = i;
-      }
-    }
-
-    swap(arr, startIndex, minIndex)
-    startIndex++;
-  }
-
-  return arr;
-}
 const minMaxSort = async (arr: number[], p = 0, q = arr.length - 1) => {
   // https://www.ijert.org/a-new-approach-to-sorting-min-max-sorting-algorithm
 
-  let visualize = async (...indices: number[]) => {
-    await sleep(SORT_SLEEP_DELAY);
-    renderBars(testData);
-    setBarsActive(...indices)
-  }
-
-
-  let minimum = async (p: number, q: number) => {
-    let min = arr[p];
-    for (let i = p; i <= q; i++) {
-      await visualize(p, i)
-      if (arr[i] < min) {
-        let temp = min;
-        min = arr[i];
-        arr[i] = temp;
-      }
-      arr[p] = min;
-    }
-  }
-  let maximum = async (p: number, q: number) => {
-    let max = arr[q];
-    for (let i = p; i <= q; i++) {
-      await visualize(q, i)
-      let temp: number;
-      if (arr[i] > max) {
-        temp = arr[i];
-        arr[i] = arr[q];
-        arr[q] = temp;
-      }
-      max = arr[q];
-    }
-  }
-
-
   while (p < q) {
-    await minimum(p, q);
-    await maximum(p, q);
+    let minIndex = p, maxIndex = q;
+
+    for (let i = p; i <= q; i++) {
+      await sleep(SORT_SLEEP_DELAY);
+      renderBars(testData);
+      setBarsActive(p, q, i, maxIndex, minIndex);
+
+      if (arr[i] < arr[minIndex]) {
+        minIndex = i;
+      } else if (arr[i] > arr[maxIndex]) {
+        maxIndex = i;
+      }
+    }
+
+    if (p === maxIndex) {
+      swap(arr, p, minIndex);
+      swap(arr, q, minIndex);
+    } else if (q === minIndex) {
+      swap(arr, q, maxIndex);
+      swap(arr, p, maxIndex);
+    } else {
+      swap(arr, p, minIndex);
+      swap(arr, q, maxIndex);
+    }
+
     p++;
     q--;
   }
@@ -173,7 +142,6 @@ const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonCont
 
 createSortButton(bubbleSort, "Bubble Sort")
 createSortButton(combSort, "Comb Sort")
-createSortButton(minSort, "Min Sort")
 createSortButton(minMaxSort, "Min-Max Sort")
 
 const inputContainerElement = createElement(app, "div");
