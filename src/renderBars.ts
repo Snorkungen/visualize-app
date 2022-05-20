@@ -7,13 +7,8 @@ export const useRenderBars = () => (data: number[]) => {
     for (let i = 0; i < data.length; i++) {
         let n = data[i]
         createElementNS(barsGroupElement, "rect", "fill=red", "ry=1%", `height=${n}`, `width=${barWidth - 0.5}%`, `y=${totalHeight - n}`, "x=" + i * barWidth, {
-            eventListeners: [
-                {
-                    type: "mouseover",
-                    listener: () => {
-                        console.log(n)
-                    }
-                },
+            children: [
+                createElementNS(null, "title", `content=${n}`)
             ]
         })
     }
