@@ -1,22 +1,68 @@
 import './style.css'
 import { createElement, createElementNS, sleep, shuffleArray, generateArrayOfRandomNumbers, time } from './lib';
 
-export const app = document.querySelector<HTMLDivElement>('#app');
-export const topBarElement = createElement(app, "div", "style=display:flex;justify-content:center;");
-
 const totalWidth = 100;
 const totalHeight = 100;
 let arrayCount = 20;
 let barWidth = Math.round(totalWidth / arrayCount);
 
-let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999/xlink", `viewBox=0 0 ${totalWidth} ${totalHeight}`, "width=400");
-/* background */ createElementNS(svgElement, "rect", "height=100", "width=100", "fill=#303030");
-let barsGroupElement = createElementNS(svgElement, "g");
-let buttonDivElement = createElement(app, "div");
-
 let isSorting = false;
 let data = generateArrayOfRandomNumbers(arrayCount, totalHeight);
 let SORT_SLEEP_DELAY = 150;
+
+export const app = document.querySelector<HTMLDivElement>('#app');
+export const topBarElement = createElement(app, "div", "style=display:flex;justify-content:center;", {
+  children: [
+    createElement(null, "button", "content=Shuffle", "class=btn", {
+      eventListeners: [{
+        type: "click",
+        listener: () => {
+          if (isSorting) return;
+          shuffleArray(data);
+          renderBars(data);
+        }
+      }]
+    }),
+    createElement(null, "button", "content=new data", "class=btn", {
+      eventListeners: [{
+        type: "click",
+        listener: () => {
+          if (isSorting) return;
+          data = generateArrayOfRandomNumbers(arrayCount, totalHeight);
+          renderBars(data);
+        }
+      }]
+    }),
+    createElement(null, "label", "content=Bars count", {
+      children: [
+        createElement(null, "input", "type=number", `value=${arrayCount}`, {
+          eventListeners: [
+            {
+              type: "input",
+              listener: (event) => {
+                let target = event.target as HTMLInputElement;
+                if (isSorting || target.valueAsNumber > (totalWidth / 2)) return target.valueAsNumber = arrayCount;
+                arrayCount = target.valueAsNumber;
+                data = generateArrayOfRandomNumbers(arrayCount, totalHeight);
+                barWidth = Math.round(totalWidth / arrayCount);
+                renderBars(data);
+                return;
+              }
+            }
+          ]
+        })
+      ]
+    }),
+  ]
+});
+
+let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999/xlink", `viewBox=0 0 ${totalWidth} ${totalHeight}`, "width=400", {
+  children: [
+   /* background */ createElementNS(null, "rect", "height=100", "width=100", "fill=#303030")
+  ]
+});
+let barsGroupElement = createElementNS(svgElement, "g");
+let buttonDivElement = createElement(app, "div");
 
 const renderBars = (data: number[]) => {
   barsGroupElement.innerHTML = "";
@@ -38,44 +84,7 @@ const setBarsActive = (...indices: number[]) => {
 
 renderBars(data);
 
-createElement(topBarElement, "button", "content=Shuffle", "class=btn", {
-  eventListeners: [{
-    type: "click",
-    listener: () => {
-      if (isSorting) return;
-      shuffleArray(data);
-      renderBars(data);
-    }
-  }],
-  children: [
-    createElement(topBarElement, "button", "content=new data", "class=btn", {
-      eventListeners: [{
-        type: "click",
-        listener: () => {
-          if (isSorting) return;
-          data = generateArrayOfRandomNumbers(arrayCount, totalHeight);
-          renderBars(data);
-        }
-      }]
-    }),
-    createElement(createElement(topBarElement, "label", "content=Bars count"), "input", "type=number", `value=${arrayCount}`, {
-      eventListeners: [
-        {
-          type: "input",
-          listener: (event) => {
-            let target = event.target as HTMLInputElement;
-            if (isSorting || target.valueAsNumber > (totalWidth / 2)) return target.valueAsNumber = arrayCount;
-            arrayCount = target.valueAsNumber;
-            data = generateArrayOfRandomNumbers(arrayCount, totalHeight);
-            barWidth = Math.round(totalWidth / arrayCount);
-            renderBars(data);
-            return;
-          }
-        }
-      ]
-    })
-  ]
-});
+
 
 
 const swap = <Type = unknown>(arr: Type[], n1: number, n2: number) => {
