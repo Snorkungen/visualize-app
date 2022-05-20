@@ -1,23 +1,39 @@
-const attributesHandler = <K extends keyof (HTMLElementEventMap & SVGElementEventMap)>(element: HTMLElement | SVGElement, ...attributes: (string | {
-    type: K;
-    listener: (ev: Event | HTMLElementEventMap[K] | SVGElementEventMap[K]) => any;
-    options?: (boolean | AddEventListenerOptions) | (boolean | AddEventListenerOptions)
-})[]) => {
-    for (const attribute of attributes) {
-        if (typeof attribute === "object") {
-            element.addEventListener(attribute.type, attribute.listener, attribute.options)
+const attributesHandler = <K extends keyof (HTMLElementEventMap & SVGElementEventMap)>(element: Element, ...attribs: (
+    string | {
+        eventListeners?: {
+            type: K;
+            listener: (ev: Event | HTMLElementEventMap[K] | SVGElementEventMap[K]) => any;
+            options?: (boolean | AddEventListenerOptions)
+        }[],
+        children?: (null | Element | string)[]
+    })[]) => {
+    for (const attribute of attribs) {
+        if (!attribute) continue;
+        if (typeof attribute === "string") {
+            let [qualifiedName, value] = attribute.split("=");
+            if (!qualifiedName) continue;
+            if (qualifiedName === "content") {
+                element.textContent = value + "";
+            } else {
+                element.setAttribute(qualifiedName, value + "");
+            }
             continue;
         }
-        const [qualifiedName, value] = attribute.split("=");
-        if (!qualifiedName) continue;
-        if (qualifiedName == "content") {
-            element.textContent = value;
-        } else {
-            element.setAttribute(qualifiedName, value);
+        if (attribute.eventListeners) {
+            for (const { type, listener, options } of attribute.eventListeners) {
+                element.addEventListener(type, listener, options);
+            }
+        }
+        if (attribute.children) {
+            for (const child of attribute.children) {
+                if (!child) continue;
+                else if (typeof child === "string") element.textContent = child;
+                else if (typeof child === "object" && child.nodeName) element.appendChild(child);
+            }
         }
     }
-
 }
+
 
 export const createElement = (
     parent: null | HTMLElement,
@@ -43,7 +59,7 @@ export const createElementNS = (
     const element = document.createElementNS("http://www.w3.org/2000/svg", elemName);
 
     attributesHandler(element, ...attributes);
- 
+
     if (parent) {
         parent.appendChild(element);
     };
