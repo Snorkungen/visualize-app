@@ -1,5 +1,6 @@
 import './style.css'
 import { createElement, createElementNS, sleep, shuffleArray, generateArrayOfRandomNumbers, time } from './lib';
+import useRenderBars from './renderBars';
 
 const totalWidth = 100;
 const totalHeight = 100;
@@ -64,14 +65,11 @@ let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999
 let barsGroupElement = createElementNS(svgElement, "g");
 let buttonDivElement = createElement(app, "div");
 
-const renderBars = (data: number[]) => {
-  barsGroupElement.innerHTML = "";
-
-  for (let i = 0; i < data.length; i++) {
-    let n = data[i]
-    createElementNS(barsGroupElement, "rect", "fill=red", "ry=2%", `height=${n}`, `width=${barWidth - 0.5}%`, `y=${totalHeight - n}`, "x=" + i * barWidth)
-  }
-};
+const renderBars = useRenderBars({
+  parent : barsGroupElement,
+  barWidth,
+  totalHeight
+});
 
 const setBarsActive = (...indices: number[]) => {
   indices = Array.from(new Set(indices));
