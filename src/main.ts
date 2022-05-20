@@ -2,14 +2,14 @@ import './style.css'
 import { createElement, createElementNS, sleep, shuffleArray, generateArrayOfRandomNumbers, time } from './lib';
 import useRenderBars from './renderBars';
 
-const totalWidth = 100;
-const totalHeight = 100;
-let arrayCount = 20;
-let barWidth = Math.round(totalWidth / arrayCount);
+export const totalWidth = 100;
+export const totalHeight = 100;
+export let arrayCount = 20;
+export let barWidth = Math.round(totalWidth / arrayCount);
 
-let isSorting = false;
-let data = generateArrayOfRandomNumbers(arrayCount, totalHeight);
-let SORT_SLEEP_DELAY = 150;
+export let isSorting = false;
+export let data = generateArrayOfRandomNumbers(arrayCount, totalHeight);
+export let SORT_SLEEP_DELAY = 150;
 
 export const app = document.querySelector<HTMLDivElement>('#app');
 export const topBarElement = createElement(app, "div", "style=display:flex;justify-content:center;", {
@@ -62,14 +62,10 @@ let svgElement = createElementNS(app, "svg", "xmlns:xlink=http://www.w3.org/1999
    /* background */ createElementNS(null, "rect", "height=100", "width=100", "fill=#303030")
   ]
 });
-let barsGroupElement = createElementNS(svgElement, "g");
+export let barsGroupElement = createElementNS(svgElement, "g");
 let buttonDivElement = createElement(app, "div");
 
-const renderBars = useRenderBars({
-  parent : barsGroupElement,
-  barWidth,
-  totalHeight
-});
+const renderBars = useRenderBars();
 
 const setBarsActive = (...indices: number[]) => {
   indices = Array.from(new Set(indices));
@@ -81,9 +77,6 @@ const setBarsActive = (...indices: number[]) => {
 }
 
 renderBars(data);
-
-
-
 
 const swap = <Type = unknown>(arr: Type[], n1: number, n2: number) => {
   let temp = arr[n1];

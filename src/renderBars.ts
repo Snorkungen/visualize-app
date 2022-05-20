@@ -1,28 +1,19 @@
 import { createElementNS } from "./lib";
+import { barWidth, barsGroupElement, totalHeight } from "./main"
 
-export const useRenderBars = ({ parent, barWidth, totalHeight }: {
-    parent: SVGElement;
-    barWidth: number;
-    totalHeight: number;
-}) => (data: number[]) => {
-    parent.innerHTML = "";
+export const useRenderBars = () => (data: number[]) => {
+    barsGroupElement.innerHTML = "";
 
     for (let i = 0; i < data.length; i++) {
         let n = data[i]
-        createElementNS(parent, "rect", "fill=red", "ry=2%", `height=${n}`, `width=${barWidth - 0.5}%`, `y=${totalHeight - n}`, "x=" + i * barWidth, {
+        createElementNS(barsGroupElement, "rect", "fill=red", "ry=1%", `height=${n}`, `width=${barWidth - 0.5}%`, `y=${totalHeight - n}`, "x=" + i * barWidth, {
             eventListeners: [
                 {
-                    type: "mouseenter",
-                    listener: (event) => {
-                        console.log(event)
+                    type: "mouseover",
+                    listener: () => {
+                        console.log(n)
                     }
                 },
-                {
-                    type: "mouseleave",
-                    listener: (event) => {
-                        console.log(event)
-                    }
-                }
             ]
         })
     }
