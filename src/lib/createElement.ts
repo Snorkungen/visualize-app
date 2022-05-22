@@ -3,9 +3,10 @@ const attributesHandler = <K extends keyof (HTMLElementEventMap & SVGElementEven
         eventListeners?: {
             type: K;
             listener: (ev: Event | HTMLElementEventMap[K] | SVGElementEventMap[K]) => any;
-            options?: (boolean | AddEventListenerOptions)
+            options?: (boolean | AddEventListenerOptions);
         }[],
         children?: (null | Element | string)[]
+        attributes?: { [qName: string]: string | number }
     })[]) => {
     for (const attribute of attribs) {
         if (!attribute) continue;
@@ -29,6 +30,11 @@ const attributesHandler = <K extends keyof (HTMLElementEventMap & SVGElementEven
                 if (!child) continue;
                 else if (typeof child === "string") element.textContent = child;
                 else if (typeof child === "object" && child.nodeName) element.appendChild(child);
+            }
+        }
+        if (attribute.attributes) {
+            for (const qName in attribute.attributes) {
+                element.setAttribute(qName, attribute.attributes[qName] + "")
             }
         }
     }

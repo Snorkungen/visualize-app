@@ -1,6 +1,7 @@
 import './style.css'
 import { createElement, createElementNS, sleep, shuffleArray, generateArrayOfRandomNumbers, time } from './lib';
 import useRenderBars from './renderBars';
+import orgChart from './orgChart';
 
 export const totalWidth = 100;
 export const totalHeight = 100;
@@ -192,3 +193,5 @@ rangeInputElement.addEventListener("input", () => {
   SORT_SLEEP_DELAY = rangeInputElement.valueAsNumber;
   rangeInputLabelElement.textContent = rangeInputElement.value;
 });
+
+orgChart();
