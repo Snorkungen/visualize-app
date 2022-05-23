@@ -2,10 +2,12 @@ import './style.css'
 import { createElement } from './lib';
 import createOrgChartContainer from './orgChart';
 import createSortBarsContainer from './sortBars';
+import createSortBarsContainerNew from './sortBars/sortBars.new';
 
 export const app = document.querySelector<HTMLDivElement>('#app');
 
 const sortBarsContainer = createSortBarsContainer();
+const sortBarsContainerNew = createSortBarsContainerNew();
 const orgChartContainer = createOrgChartContainer();
 
 const createSetActiveContainerButton = (element: Element, content: string) => createElement(null, "button", "class=btn", `content=${content}`, {
@@ -25,9 +27,10 @@ createElement(app, "div", {
   children: [
     createSetActiveContainerButton(sortBarsContainer, "Sort Bars"),
     createSetActiveContainerButton(orgChartContainer, "Org Chart"),
+    createSetActiveContainerButton(sortBarsContainerNew, "Sort Bars New"),
   ]
 })
 
 const container = createElement(app, "div", {
-  children: [sortBarsContainer]
+  children: [sortBarsContainerNew]
 });
