@@ -1,5 +1,4 @@
-import { createElementNS } from "./lib";
-import { app } from "./main";
+import { createElement, createElementNS } from "../lib"
 
 let width = 600, height = 200;
 let personWidth = 60, personHeight = 20;
@@ -13,25 +12,26 @@ const org: Person = {
     name: "Boss",
     sub: [
         { name: "Assistant", sub: [{ name: "Assistant-Assistant" }, { name: "Noob" }] },
-        { name: "Secret Helper",sub:[{name : "Liam"}] },
+        { name: "Secret Helper", sub: [{ name: "Liam" }] },
         { name: "Secret Helper" },
         { name: "Master-Assasin", sub: [{ name: "Assasin", sub: [{ name: "Assasin-Apprentice", sub: [{ name: "Joe" }, { name: "Michelle" }] }, { name: "Noob" }] }] },
         { name: "Master-Assasin", sub: [{ name: "Assasin", sub: [{ name: "Assasin-Apprentice", sub: [{ name: "Joe" }, { name: "Michelle" }] }, { name: "Noob" }] }] },
     ]
 }
+const calcXCenter = (w: number) => w / 2 - (personWidth / 2)
 
-export const orgChart = () => {
-    const SVGElement = createElementNS(app, "svg", `viewBox=0 0 ${width} ${height}`, `width=${width + height}`,"overflow=scroll", {
+
+
+
+export const createOrgChartContainer = () => {
+    const container = createElement(null, "div");
+    const SVGElement = createElementNS(container, "svg", `viewBox=0 0 ${width} ${height}`, `width=${width + height}`, "overflow=scroll", {
         children: [
             createElementNS(null, "rect", `width=${width}`, `height=${height}`, `fill=${"red"}`)
         ]
     });
 
-
     const groupElement = createElementNS(SVGElement, "g");
-
-
-    const calcXCenter = (w: number) => w / 2 - (personWidth / 2)
 
     const drawPerson = (person: Person, startX = calcXCenter(width), startY = personHeight / 2, availWidth = width, availWidthStart = availWidth * 0) => {
         const elem = createElementNS(groupElement, "rect", {
@@ -96,6 +96,8 @@ export const orgChart = () => {
     }
 
     drawPerson(org);
+
+    return container;
 }
 
-export default orgChart;
+export default createOrgChartContainer;
