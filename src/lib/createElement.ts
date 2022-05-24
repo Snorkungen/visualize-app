@@ -1,10 +1,10 @@
-const attributesHandler = <K extends keyof (HTMLElementEventMap & SVGElementEventMap)>(element: Element, ...attribs: (
+const attributesHandler = <E extends HTMLElement | SVGElement, K extends keyof (HTMLElementEventMap | SVGElementEventMap)>(element: E, ...attribs: (
     string | {
-        eventListeners?: {
+        eventListeners?: ({
             type: K;
-            listener: (ev: Event | HTMLElementEventMap[K] | SVGElementEventMap[K]) => any;
+            listener: (ev: HTMLElementEventMap[K] | SVGElementEventMap[K]) => any;
             options?: (boolean | AddEventListenerOptions);
-        }[],
+        })[],
         children?: (null | Element | string)[]
         attributes?: { [qName: string]: string | number }
     })[]) => {
@@ -22,7 +22,11 @@ const attributesHandler = <K extends keyof (HTMLElementEventMap & SVGElementEven
         }
         if (attribute.eventListeners) {
             for (const { type, listener, options } of attribute.eventListeners) {
-                element.addEventListener(type, listener, options);
+                if (element instanceof SVGElement) {
+                    element.addEventListener(type, listener, options);
+                } else if (element instanceof HTMLElement) {
+                    element.addEventListener(type, listener, options);
+                }
             }
         }
         if (attribute.children) {
