@@ -2,15 +2,93 @@ import { createElement, generateArrayOfRandomNumbers, shuffleArray, sleep, time 
 
 let SORT_SLEEP_DELAY = 150;
 let canvasWidth = 400, canvasHeight = canvasWidth, canvasColor = "#303030";
-const canvas = createElement(null, "canvas", { attributes: { width: canvasWidth, height: canvasHeight, } }) as HTMLCanvasElement, ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-
 let barCount = 30, isSorting = false;
 let data = generateArrayOfRandomNumbers(barCount, canvasHeight);
 let regularBarColor = "red", activeBarColor = "blue";
+let grabbedBar: null | { i: number, n: number } = null, grabbingBarColor = "green";
 
-const drawBar = (n: number, i: number, color = regularBarColor) => {
+const getCanvasMousePos = (event: MouseEvent): [x: number, y: number] => {
+    const rect = canvas.getBoundingClientRect();
+    return [
+        event.clientX - rect.left,
+        event.clientY - rect.top
+    ];
+}
+const getBarX = (x: number): number => x - (canvasWidth / barCount * 0.5), mouseIsOnBar = (n: number, y: number): boolean => n > (canvasHeight - y);
+
+const canvas = createElement(null, "canvas", {
+    attributes: { width: canvasWidth, height: canvasHeight }, eventListeners: [{
+        type: "mousemove", listener: (event) => {
+            if (isSorting) return;
+            if (!(event instanceof MouseEvent)) return;
+            const [x, y] = getCanvasMousePos(event), barX = getBarX(x);
+
+            let index = Math.floor(x / (canvasWidth / barCount))
+            let n = data[index];
+
+            if (grabbedBar) {
+                canvas.style.cursor = "grabbing";
+
+                requestAnimationFrame(() => {
+                    draw(index, grabbedBar ? grabbedBar?.i : canvasWidth);
+                    drawBar(grabbedBar ? grabbedBar?.n : 0, barX, grabbingBarColor);
+                });
+                return;
+            }
+
+            if (!mouseIsOnBar(n, y)) {
+                canvas.style.cursor = "default";
+                requestAnimationFrame(draw);
+                return;
+            };
+            canvas.style.cursor = "pointer";
+            requestAnimationFrame(() => {
+                draw();
+                drawTooltip(event, n);
+            });
+        }
+    }, {
+        type: "mouseleave", listener() {
+            if (isSorting) return;
+            requestAnimationFrame(draw)
+        }
+    }, {
+        type: "mousedown", listener(event) {
+            if (isSorting) return;
+            if (!(event instanceof MouseEvent)) return;
+            if (grabbedBar) return;
+
+            const [x, y] = getCanvasMousePos(event), barX = getBarX(x), i = Math.floor(x / (canvasWidth / barCount));
+            const n = data[i];
+
+            if (!mouseIsOnBar(n, y)) return;
+
+            grabbedBar = { i, n };
+            canvas.style.cursor = "grabbing";
+            requestAnimationFrame(() => {
+                draw();
+                drawBar(n, barX, grabbingBarColor);
+            });
+        }
+    }, {
+        type: "mouseup", listener(event) {
+            if (!(event instanceof MouseEvent)) return;
+            if (!grabbedBar) return;
+            /* Swap */
+            const [x] = getCanvasMousePos(event), i = Math.floor(x / (canvasWidth / barCount));
+
+            swap(data, i, grabbedBar.i);
+
+            grabbedBar = null;
+            canvas.style.cursor = "default";
+            requestAnimationFrame(draw);
+        }
+    }]
+}) as HTMLCanvasElement, ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+const drawBar = (n: number, x: number, color = regularBarColor) => {
     let barWidth = canvasWidth / barCount, barHeight = n;
-    let x = i * (barWidth), y = canvasHeight - n, w = barWidth - 2;
+    let y = canvasHeight - n, w = barWidth - 2;
     let barRadius = 3;
 
     // https://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-using-html-canvas
@@ -29,6 +107,24 @@ const drawBar = (n: number, i: number, color = regularBarColor) => {
     ctx.fill();
 }
 
+const drawTooltip = (event: MouseEvent, text: string | number) => {
+    if (typeof text === "number") text = text + "";
+
+    const [x, y] = getCanvasMousePos(event);
+    let offset = 30;
+    let textX = x, textY = y;
+    /*
+        if (y - offset < 0) textY += offset;
+        if (x - offset < 0) textX += offset;
+        if (x + offset > canvasWidth) textX -= offset;
+    */
+    ctx.font = "18px Arial";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.fillText(text, textX, textY - offset);
+
+}
+
 const draw = (...activeIndices: number[]) => {
     if (!ctx) return;
 
@@ -37,7 +133,7 @@ const draw = (...activeIndices: number[]) => {
     ctx.fillStyle = canvasColor;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    data.forEach((n, i) => drawBar(n, i, activeIndices.includes(i) ? activeBarColor : regularBarColor));
+    data.forEach((n, i) => drawBar(n, i * (canvasWidth / barCount), activeIndices.includes(i) ? activeBarColor : regularBarColor));
 }
 
 const swap = <Type = unknown>(arr: Type[], n1: number, n2: number) => {
@@ -174,22 +270,24 @@ export const createSortBarsContainerNew = () => {
 
     requestAnimationFrame(draw)
     let buttonDivElement = createElement(container, "div");
-    const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonContent: string) => {
-        const button = createElement(buttonDivElement, "button", "content=" + buttonContent, "class=btn");
-        button.addEventListener("click", async () => {
-            if (isSorting) return;
-            isSorting = true;
-            // shuffleArray(data);
-            requestAnimationFrame(draw);
-            await sleep(SORT_SLEEP_DELAY);
-
-            time.sec(func(data)).then((seconds) => {
+    const createSortButton = (func: (arr: number[]) => Promise<number[]>, buttonContent: string) => createElement(buttonDivElement, "button", "content=" + buttonContent, "class=btn", {
+        eventListeners: [{
+            type: "click",
+            listener: async () => {
+                if (isSorting) return;
+                isSorting = true;
+                // shuffleArray(data);
                 requestAnimationFrame(draw);
-                console.log(`${seconds} seconds`);
-                isSorting = false;
-            });
-        });
-    };
+                await sleep(SORT_SLEEP_DELAY);
+
+                time.sec(func(data)).then((seconds) => {
+                    requestAnimationFrame(draw);
+                    console.log(`${seconds} seconds`);
+                    isSorting = false;
+                });
+            }
+        }]
+    });
 
     createSortButton(bubbleSort, "Bubble Sort")
     createSortButton(combSort, "Comb Sort")
