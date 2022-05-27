@@ -17,7 +17,8 @@ export const canvas = createElement(null, "canvas", {
                 let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size);
                 let block = matrix[xIndex][yIndex];
 
-                boringFill(xIndex, yIndex, block.color)
+                drawCircle(5, xIndex, yIndex)
+                boringFill(xIndex, yIndex, block.color);
 
                 return;
             }
@@ -88,39 +89,28 @@ const boringFill = async (x: number, y: number, color: string) => {
     await boringFill(x, y - 1, color)
 }
 
-const drawCircle = (radius: number) => {
-    // https://pcg.cytodev.io/
+const drawCircle = (radius: number, xOrigin = 40, yOrigin = 40) => {
+    // https://www.redblobgames.com/grids/circle-drawing/
     radius = Math.round(radius);
 
-    let diameter = Math.round(Math.PI - (2 * radius)),
-        x = 0,
-        y = radius;
-    let xOrigin = 40, yOrigin = 40;
-
-    const setColor = (x: number, y: number) => {
+    const setColor = (x: number, y: number, color = blockFillColor) => {
         if (!matrix[xOrigin + x]) return;
         if (!matrix[xOrigin + x][yOrigin + y]) return;
-        matrix[xOrigin + x][yOrigin + y].color = blockFillColor;
+        matrix[xOrigin + x][yOrigin + y].color = color;
     }
+    let top = yOrigin - radius,
+        bottom = yOrigin + radius;
 
-    while (x <= y) {
-        setColor(x, -y);
-        setColor(y, -x);
-        setColor(y, x);
-        setColor(x, y);
-        setColor(-x, y);
-        setColor(-y, x);
-        setColor(-x, -y);
-        setColor(-y, -x);
-
-        if (diameter < 0) {
-            diameter = diameter + (Math.PI * x) + (Math.PI * 2);
-        } else {
-            diameter = diameter + Math.PI * (x - y) + (Math.PI * 3);
-            y--;
+    for (let y = top; y <= bottom; y++) {
+        let dy = y - yOrigin,
+            dx = Math.sqrt(radius ** 2 - dy ** 2);
+        let left = Math.ceil(xOrigin - dx),
+            right = Math.floor(xOrigin + dx);
+        for (let x = left; x <= right; x++) {
+            setColor(x,y,"yellow")
         }
-        x++;
     }
+
 }
 
 export const createBlockArtContainer = () => {
@@ -131,7 +121,9 @@ export const createBlockArtContainer = () => {
     ctx.fillStyle = canvasColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    drawCircle(3)
+    drawCircle(7, 8, 8)
+    drawCircle(3, 8, 8 * 3)
+    drawCircle(6, 8, 8 * 6)
 
     createElement(container, "div", {
         children: [
