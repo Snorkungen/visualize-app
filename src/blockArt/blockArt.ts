@@ -17,7 +17,6 @@ export const canvas = createElement(null, "canvas", {
                 let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size);
                 let block = matrix[xIndex][yIndex];
 
-                drawCircle(5, xIndex, yIndex)
                 boringFill(xIndex, yIndex, block.color);
 
                 return;
@@ -89,28 +88,26 @@ const boringFill = async (x: number, y: number, color: string) => {
     await boringFill(x, y - 1, color)
 }
 
-const drawCircle = (radius: number, xOrigin = 40, yOrigin = 40) => {
+const drawCircle = async (radius: number, xOrigin = 40, yOrigin = 40) => {
     // https://www.redblobgames.com/grids/circle-drawing/
-    radius = Math.round(radius);
+    radius += 0.5;
 
-    const setColor = (x: number, y: number, color = blockFillColor) => {
-        if (!matrix[xOrigin + x]) return;
-        if (!matrix[xOrigin + x][yOrigin + y]) return;
-        matrix[xOrigin + x][yOrigin + y].color = color;
-    }
-    let top = yOrigin - radius,
-        bottom = yOrigin + radius;
+    let top = Math.floor(yOrigin - radius),
+        bottom = Math.ceil(yOrigin + radius),
+        left = Math.floor(xOrigin - radius),
+        right = Math.ceil(xOrigin + radius);
 
     for (let y = top; y <= bottom; y++) {
-        let dy = y - yOrigin,
-            dx = Math.sqrt(radius ** 2 - dy ** 2);
-        let left = Math.ceil(xOrigin - dx),
-            right = Math.floor(xOrigin + dx);
         for (let x = left; x <= right; x++) {
-            setColor(x,y,"yellow")
+            if ((xOrigin - x) ** 2 + (yOrigin - y) ** 2 <= radius ** 2) {
+                if (!matrix[x] || !matrix[x][y]) continue;
+                await sleep(100)
+                matrix[x][y].color = blockFillColor;
+            }
         }
     }
 
+    bottom
 }
 
 export const createBlockArtContainer = () => {
