@@ -40,6 +40,7 @@ export const canvas = createElement(null, "canvas", {
                 let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size);
                 let block = matrix[xIndex][yIndex];
                 block.color = blockFillColor
+                drawCircle(3, xIndex, yIndex)
             }
         }, {
             type: "mouseleave", listener() {
@@ -110,6 +111,13 @@ const drawCircle = async (radius: number, xOrigin = 40, yOrigin = 40) => {
     bottom
 }
 
+const downloadCanvasAsPng = (name: string) => {
+    const anchor = document.createElement("a");
+    anchor.href = canvas.toDataURL("image/png");
+    anchor.download = `${name}-canvas-image.png`;
+    anchor.click();
+}
+
 export const createBlockArtContainer = () => {
     const container = createElement(null, "div");
     container.appendChild(canvas);
@@ -124,6 +132,7 @@ export const createBlockArtContainer = () => {
 
     createElement(container, "div", {
         children: [
+            createElement(container, "button", "class=btn", "content=Download", { eventListeners: [{ type: "click", listener() { downloadCanvasAsPng(Date.now() + "") } }] }),
             createElement(container, "button", "class=btn", "content=Clear", { eventListeners: [{ type: "click", listener() { matrix = initMatrix() } }] }),
             createElement(container, "input", "type=color", `value=${blockFillColor}`, { eventListeners: [{ type: "input", listener(ev) { blockFillColor = (ev.target as HTMLInputElement).value } }] }),
         ]
