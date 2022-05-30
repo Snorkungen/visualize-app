@@ -1,8 +1,11 @@
 import { createElement, sleep } from "../lib";
+import { imgProcessing } from "./imgProcessing";
 
 const canvasWidth = 400, canvasHeight = canvasWidth, canvasColor = "#303030";
-let blockArtSize = 40 * 2, size = canvasWidth / blockArtSize, blockFillColor = "#BF4040";
+export let blockArtSize = 80, size = canvasWidth / blockArtSize, blockFillColor = "#BF4040";
 let mouseIsDown = false;
+let sleepDelay = 75;
+
 export const canvas = createElement(null, "canvas", {
     attributes: { width: canvasWidth, height: canvasHeight },
     eventListeners: [
@@ -64,7 +67,7 @@ const initMatrix = () => {
     return matrix;
 }
 
-let matrix = initMatrix();
+export let matrix = initMatrix();
 
 const getCanvasMousePos = (event: MouseEvent): [x: number, y: number] => {
     const rect = canvas.getBoundingClientRect();
@@ -81,7 +84,7 @@ const boringFill = async (x: number, y: number, color: string) => {
 
     block.color = blockFillColor;
 
-    await sleep(5);
+    await sleep(sleepDelay);
 
     await boringFill(x + 1, y, color)
     await boringFill(x - 1, y, color)
@@ -102,7 +105,7 @@ const drawCircle = async (radius: number, xOrigin = 40, yOrigin = 40) => {
         for (let x = left; x <= right; x++) {
             if ((xOrigin - x) ** 2 + (yOrigin - y) ** 2 <= radius ** 2) {
                 if (!matrix[x] || !matrix[x][y]) continue;
-                await sleep(100)
+                await sleep(sleepDelay)
                 matrix[x][y].color = blockFillColor;
             }
         }
@@ -126,15 +129,18 @@ export const createBlockArtContainer = () => {
     ctx.fillStyle = canvasColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    drawCircle(7, 8, 8)
-    drawCircle(3, 8, 8 * 3)
-    drawCircle(6, 8, 8 * 6)
-
     createElement(container, "div", {
         children: [
-            createElement(container, "button", "class=btn", "content=Download", { eventListeners: [{ type: "click", listener() { downloadCanvasAsPng(Date.now() + "") } }] }),
             createElement(container, "button", "class=btn", "content=Clear", { eventListeners: [{ type: "click", listener() { matrix = initMatrix() } }] }),
             createElement(container, "input", "type=color", `value=${blockFillColor}`, { eventListeners: [{ type: "input", listener(ev) { blockFillColor = (ev.target as HTMLInputElement).value } }] }),
+            createElement(container, "button", "class=btn", "content=Download", { eventListeners: [{ type: "click", listener() { downloadCanvasAsPng(Date.now() + "") } }] }),
+            createElement(container, "button", "class=btn", "content=Get image Data", {
+                eventListeners: [{
+                    type: "click", listener() {
+                        imgProcessing(ctx)
+                    }
+                }]
+            }),
         ]
     })
 

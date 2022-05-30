@@ -8,3 +8,4 @@ export function shuffleArray<Type = unknown>(arr: Type[]) {
 
 export * from "./createElement";
 export * from "./time";
+export * from "./rgbtohex";
