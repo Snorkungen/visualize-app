@@ -1,45 +1,60 @@
-import { canvas, matrix, size, blockArtSize } from "./blockArt";
+import { canvas, matrix, size } from "./blockArt";
 import { rgbtohex } from "../lib";
 import image from "../../pic.jpg"
-export const imgProcessing = async (ctx: CanvasRenderingContext2D,) => {
-    const img = new Image()
-    img.addEventListener("load", () => {
-        drawImageScaled(img, ctx)
+import { colorsMatrixType, getImageBlockColors, getAllColorsFromColorsMatrix, getMostPopularColors, colorLuminance, similarColor } from "./color";
 
-        let colorsMatrix: string[][] = [];
-        for (let x = 0; x < blockArtSize; x++) {
-            colorsMatrix[x] = [];
-            for (let y = 0; y < blockArtSize; y++) {
-                let _x = [];
-                let imgData = ctx.getImageData(size * x, size * y, size, size);
-                for (let i = 0; i < imgData.data.length; i += 4) {
-                    _x.push(Array.from("abcd").map((_, j) => imgData.data[i + j]))
-                }
-                let __c = _x.reduce((res, curr) => {
-                    return [res[0] + curr[0], res[1] + curr[1], res[2] + curr[2], res[3] + curr[3]]
-                }, [0, 0, 0, 0]).map((v) => Math.floor(v / _x.length))
+export const imgProcessing = async () => {
+    let colorsMatrix = await getImageBlockColors(image, {
+        canvas,
+        matrixSize: matrix.length,
+        blockSize: size
+    });
 
-                colorsMatrix[x][y] = rgbtohex(...__c)
-            }
+    let allColors = getAllColorsFromColorsMatrix(colorsMatrix);
+    let popColors = getMostPopularColors(allColors).splice(0, 1000),
+        popColorLuminance = popColors.map((rgba) => colorLuminance(...rgba));
+
+
+    // Join similar colors
+
+    let _x: colorsMatrixType[number] = [];
+    for (let i = 0; i < popColors.length; i++) {
+        let b = false;
+        for (let co in _x) {
+            if (similarColor(_x[co], popColors[i], 5)) b = true;
         }
+        if (b) continue;
 
-        matrix.forEach((row, x) => row.forEach((block, y) => {
-            block.color = colorsMatrix[x][y]
-        }))
+        _x.push(popColors[i])
+    }
 
-    })
-    img.src = image;
+    popColors = _x
+    popColorLuminance = popColors.map((rgba) => colorLuminance(...rgba))
+
+    matrix.forEach((row, x) => row.forEach((block, y) => {
+        let color = colorsMatrix[x][y];
+
+        let lum = colorLuminance(...color),
+            popLum = closest(lum, popColorLuminance),
+            popLumIndex = popColorLuminance.indexOf(popLum);
+
+        color = popColors[popLumIndex];
+
+        block.color = rgbtohex(...color)
+    }));
 };
 
 export default imgProcessing;
-function drawImageScaled(img: HTMLImageElement, ctx: CanvasRenderingContext2D) {
-    var canvas = ctx.canvas;
-    var hRatio = canvas.width / img.width;
-    var vRatio = canvas.height / img.height;
-    var ratio = Math.min(hRatio, vRatio);
-    var centerShift_x = (canvas.width - img.width * ratio) / 2;
-    var centerShift_y = (canvas.height - img.height * ratio) / 2;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, img.width, img.height,
-        centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+
+function closest(needle: number, haystack: number[]) {
+    return haystack.reduce((a, b) => {
+        let aDiff = Math.abs(a - needle);
+        let bDiff = Math.abs(b - needle);
+
+        if (aDiff == bDiff) {
+            return a > b ? a : b;
+        } else {
+            return bDiff < aDiff ? b : a;
+        }
+    });
 }

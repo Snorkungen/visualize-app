@@ -4,7 +4,7 @@ import { imgProcessing } from "./imgProcessing";
 const canvasWidth = 400, canvasHeight = canvasWidth, canvasColor = "#303030";
 export let blockArtSize = 80, size = canvasWidth / blockArtSize, blockFillColor = "#BF4040";
 let mouseIsDown = false;
-let sleepDelay = 75;
+let sleepDelay = 5;
 
 export const canvas = createElement(null, "canvas", {
     attributes: { width: canvasWidth, height: canvasHeight },
@@ -137,7 +137,7 @@ export const createBlockArtContainer = () => {
             createElement(container, "button", "class=btn", "content=Get image Data", {
                 eventListeners: [{
                     type: "click", listener() {
-                        imgProcessing(ctx)
+                        imgProcessing()
                     }
                 }]
             }),
