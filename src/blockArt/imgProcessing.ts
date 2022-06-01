@@ -1,7 +1,7 @@
 import { canvas, matrix, size } from "./blockArt";
 import { rgbtohex } from "../lib";
 import image from "../../pic.jpg"
-import { colorsMatrixType, getImageBlockColors, getAllColorsFromColorsMatrix, getMostPopularColors, colorLuminance, similarColor } from "./color";
+import {limitColors, getImageBlockColors, getAllColorsFromColorsMatrix, getMostPopularColors, colorLuminance, similarColor } from "./color";
 
 export const imgProcessing = async () => {
     let colorsMatrix = await getImageBlockColors(image, {
@@ -11,25 +11,10 @@ export const imgProcessing = async () => {
     });
 
     let allColors = getAllColorsFromColorsMatrix(colorsMatrix);
-    let popColors = getMostPopularColors(allColors).splice(0, 1000),
+
+    let popColors = limitColors(allColors,100),// getMostPopularColors(allColors).splice(0, 1000),
         popColorLuminance = popColors.map((rgba) => colorLuminance(...rgba));
 
-
-    // Join similar colors
-
-    let _x: colorsMatrixType[number] = [];
-    for (let i = 0; i < popColors.length; i++) {
-        let b = false;
-        for (let co in _x) {
-            if (similarColor(_x[co], popColors[i], 5)) b = true;
-        }
-        if (b) continue;
-
-        _x.push(popColors[i])
-    }
-
-    popColors = _x
-    popColorLuminance = popColors.map((rgba) => colorLuminance(...rgba))
 
     matrix.forEach((row, x) => row.forEach((block, y) => {
         let color = colorsMatrix[x][y];

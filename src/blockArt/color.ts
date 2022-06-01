@@ -96,7 +96,7 @@ export const colorLuminance = (...[red, green, blue]: number[]) => {
     let G = GsRGB / ((GsRGB <= 0.03928) ? 12.92 : 1.055) ** 2.4
     let B = BsRGB / ((BsRGB <= 0.03928) ? 12.92 : 1.055) ** 2.4
 
-    return Math.fround((0.2126 * R) + (0.7152 * G) + (0.0722 * B))
+    return /*Math.fround*/((0.2126 * R) + (0.7152 * G) + (0.0722 * B))
 }
 
 export const similarColor = (color1: colorsMatrixType[number][number], color2: colorsMatrixType[number][number], similarN = 10) => {
@@ -112,4 +112,19 @@ export const similarColor = (color1: colorsMatrixType[number][number], color2: c
     }
 
     return count === color1.length;
+}
+
+export const limitColors = (colors: colorsMatrixType[number], limit: number, n = 4): colorsMatrixType[number] => {
+    const newColors: colorsMatrixType[number] = [];
+
+    for (const color of colors) {
+        if (!color) break;
+        let bool = !!newColors.find((clr) => similarColor(clr, color, n));
+        if (bool) continue;
+        newColors.push(color);
+    }
+
+    if (newColors.length > limit) return limitColors(newColors, limit, n + 1);
+    console.log(n)
+    return newColors
 }
