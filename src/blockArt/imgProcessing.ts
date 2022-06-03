@@ -1,10 +1,9 @@
 import { canvas, matrix, size } from "./blockArt";
 import { rgbtohex } from "../lib";
-import image from "../../pic.jpg"
-import {limitColors, getImageBlockColors, getAllColorsFromColorsMatrix, getMostPopularColors, colorLuminance, similarColor } from "./color";
+import { limitColors, getImageBlockColors, getAllColorsFromColorsMatrix, colorLuminance, } from "./color";
 
-export const imgProcessing = async () => {
-    let colorsMatrix = await getImageBlockColors(image, {
+export const imgProcessing = async (src: string) => {
+    let colorsMatrix = await getImageBlockColors(src, {
         canvas,
         matrixSize: matrix.length,
         blockSize: size
@@ -12,7 +11,7 @@ export const imgProcessing = async () => {
 
     let allColors = getAllColorsFromColorsMatrix(colorsMatrix);
 
-    let popColors = limitColors(allColors,100),// getMostPopularColors(allColors).splice(0, 1000),
+    let popColors = limitColors(allColors, 50),// getMostPopularColors(allColors).splice(0, 1000),
         popColorLuminance = popColors.map((rgba) => colorLuminance(...rgba));
 
 

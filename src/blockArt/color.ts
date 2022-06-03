@@ -125,6 +125,5 @@ export const limitColors = (colors: colorsMatrixType[number], limit: number, n =
     }
 
     if (newColors.length > limit) return limitColors(newColors, limit, n + 1);
-    console.log(n)
     return newColors
 }
