@@ -1,13 +1,14 @@
-import { createElement, sleep, makePositive } from "../lib";
+import { createElement, sleep } from "../lib";
+import {  getPath } from "./idk";
 import { imgProcessing } from "./imgProcessing";
 
 const canvasWidth = 400, canvasHeight = canvasWidth, canvasColor = "#303030";
-export let size = 5, blockArtSize = canvasWidth / size, blockFillColor = "#BF4040";
+export let size = 4, blockArtSize = canvasWidth / size, blockFillColor = "#BF4040";
 let mouseIsDown = false;
 let sleepDelay = 5;
 
-let mouseDownAction: "fill" | "replace" = "fill";
-let lineRadius = 1;
+let mouseDownAction: "fill" | "replace" | "test" = "fill";
+let lineRadius = 2;
 
 let prevBlock: Block | undefined;
 
@@ -34,6 +35,10 @@ export const canvas = createElement(null, "canvas", {
                     case "replace":
                         replaceColor(block.color, blockFillColor);
                         break;
+                    case "test":
+                        let path = getPath(matrix, block, matrix[0][0])
+                        path.forEach((b) => b.color = blockFillColor)
+                        console.log(path)
                 }
 
                 return;
@@ -44,9 +49,7 @@ export const canvas = createElement(null, "canvas", {
                 if (!mouseIsDown) return;
                 let [x, y] = getCanvasMousePos(event);
                 let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size);
-                let block = matrix[xIndex][yIndex];
-                block.color = blockFillColor
-                // drawCircle(lineRadius, xIndex, yIndex)
+                drawCircle(lineRadius, xIndex, yIndex)
                 mouseIsDown = false;
             }
         }, {
@@ -58,30 +61,23 @@ export const canvas = createElement(null, "canvas", {
                 let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size);
                 let block = matrix[xIndex][yIndex];
                 block.color = blockFillColor
-                // drawCircle(lineRadius, xIndex, yIndex)
+                drawCircle(lineRadius, xIndex, yIndex)
 
                 // Fill in gaps
                 if (!prevBlock) return;
                 if (block === prevBlock) return;
 
-                // calculate diff
                 let xDiff = block.pos.x - prevBlock.pos.x,
                     yDiff = block.pos.y - prevBlock.pos.y;
-                prevBlock = block;
 
                 // returns if n is size or smaller
-                if ((xDiff > 0 ? xDiff <= size : xDiff >= -size) && (yDiff > 0 ? yDiff <= size : yDiff >= -size)) return;
+                if ((xDiff > 0 ? xDiff <= size : xDiff >= -size) && (yDiff > 0 ? yDiff <= size : yDiff >= -size)) {
+                    prevBlock = block;
+                    return;
+                };
 
-                // OLD DOES NOT WORK KEPP BECAUSE WHY NOT
-                for (let xn = 0; xn < makePositive(xDiff / size) + 1; xn++) {
-                    let xs = xn * size, cPosX = block.pos.x - (xDiff > 0 ? xDiff - xs : xDiff + xs);
-                    for (let yn = 0; yn < makePositive(yDiff / size) + 1; yn++) {
-                        let ys = yn * size, cPosY = block.pos.y - (yDiff > 0 ? yDiff - ys : yDiff + ys);
-                        let b = matrix[cPosX / size][cPosY / size];
-                        if (!b) break;
-                        b.color = "purple"
-                    }
-                }
+                let path = getPath(matrix, prevBlock, block);
+                path.forEach((b) => drawCircle(lineRadius, b.pos.x / size, b.pos.y / size))
 
                 prevBlock = block;
             }
