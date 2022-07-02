@@ -88,15 +88,14 @@ export const getMostPopularColors = (colors: colorsMatrixType[number]) => {
 }
 
 export const colorLuminance = (...[red, green, blue]: number[]) => {
-    let RsRGB = red / 255,
-        GsRGB = green / 255,
-        BsRGB = blue / 255
+    const a = [red, green, blue].map((n) => {
+        n /= 255;
+        return n <= 0.03928 ?
+            n / 12.92 :
+            Math.pow((n + 0.055) / 1.055, 2.4)
+    });
 
-    let R = RsRGB / ((RsRGB <= 0.03928) ? 12.92 : 1.055) ** 2.4
-    let G = GsRGB / ((GsRGB <= 0.03928) ? 12.92 : 1.055) ** 2.4
-    let B = BsRGB / ((BsRGB <= 0.03928) ? 12.92 : 1.055) ** 2.4
-
-    return /*Math.fround*/((0.2126 * R) + (0.7152 * G) + (0.0722 * B))
+    return (a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722);
 }
 
 export const similarColor = (color1: colorsMatrixType[number][number], color2: colorsMatrixType[number][number], similarN = 10) => {
