@@ -1,16 +1,20 @@
 import { createElement, sleep } from "../lib";
-import {  getPath } from "./idk";
+import { getPath } from "./idk";
 import { imgProcessing } from "./imgProcessing";
 
-const canvasWidth = 400, canvasHeight = canvasWidth, canvasColor = "#303030";
-export let size = 4, blockArtSize = canvasWidth / size, blockFillColor = "#BF4040";
+let mode: "draw" | "search" = "search";
+
+export const canvasWidth = 400, canvasHeight = canvasWidth, canvasColor = "#303030";
+export let size = 12, blockArtSize = canvasWidth / size, blockFillColor = "#BF4040";
 let mouseIsDown = false;
 let sleepDelay = 5;
 
-let mouseDownAction: "fill" | "replace" | "test" = "fill";
+let mouseDownAction: "fill" | "replace" | "border" | "searchStart" | "searchEnd" | "test" = "test";
 let lineRadius = 2;
 
 let prevBlock: Block | undefined;
+
+
 
 export const canvas = createElement(null, "canvas", {
     attributes: { width: canvasWidth, height: canvasHeight },
@@ -25,6 +29,8 @@ export const canvas = createElement(null, "canvas", {
                 let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size);
                 let block = matrix[xIndex][yIndex];
 
+                if (mode === "search") return searchMode.mousedown(event, block);
+
                 prevBlock = block;
 
                 if (event.buttons === 1) return mouseIsDown = true;
@@ -36,8 +42,10 @@ export const canvas = createElement(null, "canvas", {
                         replaceColor(block.color, blockFillColor);
                         break;
                     case "test":
-                        let path = getPath(matrix, block, matrix[0][0])
-                        path.forEach((b) => b.color = blockFillColor)
+                        let path = getPath(matrix, block, matrix[20][20])
+                        path.forEach((b) => {
+                            b.color = blockFillColor
+                        })
                         console.log(path)
                 }
 
@@ -46,9 +54,13 @@ export const canvas = createElement(null, "canvas", {
         }, {
             type: "mouseup", listener(event) {
                 if (!(event instanceof MouseEvent)) return;
-                if (!mouseIsDown) return;
+
                 let [x, y] = getCanvasMousePos(event);
-                let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size);
+                let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size), block = matrix[xIndex][yIndex];
+                if (mode === "search") return searchMode.mouseup(event, block);
+
+                if (!mouseIsDown) return;
+
                 drawCircle(lineRadius, xIndex, yIndex)
                 mouseIsDown = false;
             }
@@ -56,10 +68,13 @@ export const canvas = createElement(null, "canvas", {
             type: "mousemove",
             listener(event) {
                 if (!(event instanceof MouseEvent)) return;
-                if (!mouseIsDown) return;
+
                 let [x, y] = getCanvasMousePos(event);
-                let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size);
-                let block = matrix[xIndex][yIndex];
+                let xIndex = Math.floor(x / size), yIndex = Math.floor(y / size), block = matrix[xIndex][yIndex];
+                if (mode === "search") return searchMode.mousemove(event, block);
+                
+                if (!mouseIsDown) return;
+
                 block.color = blockFillColor
                 drawCircle(lineRadius, xIndex, yIndex)
 
@@ -82,7 +97,8 @@ export const canvas = createElement(null, "canvas", {
                 prevBlock = block;
             }
         }, {
-            type: "mouseleave", listener() {
+            type: "mouseleave", listener(event) {
+                if (mode === "search") return searchMode.mouseleave(event as MouseEvent);
                 mouseIsDown = false
                 prevBlock = undefined;
             }
@@ -91,6 +107,8 @@ export const canvas = createElement(null, "canvas", {
 }) as HTMLCanvasElement, ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
 import Block from "./Block";
+import { searchMode } from "./search";
+
 const initMatrix = () => {
     const matrix: Block[][] = [];
 
